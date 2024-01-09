@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace OrangeBear.Bears
 {
@@ -9,6 +11,8 @@ namespace OrangeBear.Bears
         [Header("Components")] [SerializeField]
         private Material[] colorMaterials;
 
+        [SerializeField] private Material[] outlineMaterials;
+
         [SerializeField] private Renderer renderer;
 
         #endregion
@@ -16,6 +20,7 @@ namespace OrangeBear.Bears
         #region Private Variables
 
         private Transform _transform;
+        private int _materialIndex;
 
         #endregion
 
@@ -24,6 +29,17 @@ namespace OrangeBear.Bears
         private void Awake()
         {
             _transform = transform;
+        }
+
+        private void OnMouseDown()
+        {
+            Debug.Log("On Mouse Down");
+            renderer.material = outlineMaterials[_materialIndex];
+        }
+
+        private void OnMouseUp()
+        {
+            renderer.material = colorMaterials[_materialIndex];
         }
 
         #endregion
@@ -36,7 +52,9 @@ namespace OrangeBear.Bears
 
             _transform.localEulerAngles = new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
 
-            renderer.material = colorMaterials[Random.Range(0, colorMaterials.Length)];
+            _materialIndex = Random.Range(0, colorMaterials.Length);
+            
+            renderer.material = colorMaterials[_materialIndex];
         }
 
         #endregion

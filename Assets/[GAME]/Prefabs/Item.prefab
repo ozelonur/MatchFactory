@@ -124,6 +124,11 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 20d28e875459a46eeb56dde91446050c, type: 2}
   - {fileID: 2100000, guid: 42dde16d623a046f3bc7d985d89c688d, type: 2}
   - {fileID: 2100000, guid: 91bce3fce3a2246bdbfdef53b0a07c0d, type: 2}
+  outlineMaterials:
+  - {fileID: 2100000, guid: 68d7b823055b1436a926dce84c49934d, type: 2}
+  - {fileID: 2100000, guid: 27fdf213c6b3940b1bfcdfeb640134e4, type: 2}
+  - {fileID: 2100000, guid: f6660fcb1dc4f401daa8b1f155ab6ab2, type: 2}
+  - {fileID: 2100000, guid: 5c26654fb6b8044adac74bea2c8b222a, type: 2}
   renderer: {fileID: 7822595995649090807}
 --- !u!54 &4199455253398743607
 Rigidbody:
