@@ -1,4 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using _GAME_.Scripts.Models;
+using _GAME_.Scripts.Utils;
 using OrangeBear.EventSystem;
 using UnityEngine;
 
@@ -9,12 +13,12 @@ namespace OrangeBear.Bears
         #region Serialized Fields
 
         [Header("Components")] [SerializeField]
-        private Item itemPrefab;
+        private Item[] itemPrefabs;
 
         [SerializeField] private Transform spawnParent;
 
         [Header("Configurations")] [SerializeField]
-        private float spawnCount = 20f;
+        private SpawnData[] spawnDataArray;
 
         #endregion
 
@@ -34,19 +38,36 @@ namespace OrangeBear.Bears
 
         private void OnGameStart(object[] arguments)
         {
-            StartCoroutine(SpawnItems());
+            List<int> idList = PrepareSpawn();
+            StartCoroutine(SpawnItems(idList));
         }
 
         #endregion
 
         #region Private Methods
 
-        private IEnumerator SpawnItems()
+        private List<int> PrepareSpawn()
         {
-            for (int i = 0; i < spawnCount; i++)
+            List<int> idList = new();
+
+            foreach (SpawnData data in spawnDataArray)
             {
-                Item item = Instantiate(itemPrefab, spawnParent);
-                
+                for (int j = 0; j < data.count; j++)
+                {
+                    idList.Add(data.id);
+                }
+            }
+
+            idList.Shuffle();
+
+            return idList;
+        }
+
+        private IEnumerator SpawnItems(List<int> idList)
+        {
+            foreach (Item item in idList.Select(id =>
+                         Instantiate(itemPrefabs.FirstOrDefault(x => x.id == id), spawnParent)))
+            {
                 item.InitItem();
 
                 yield return null;
