@@ -24,15 +24,15 @@ namespace OrangeBear.Bears
         {
             if (status)
             {
-                Register(GameEvents.InitLevel, InitLevel);
+                Register(GameEvents.OnGameStart, OnGameStart);
             }
             else
             {
-                Unregister(GameEvents.InitLevel, InitLevel);
+                Unregister(GameEvents.OnGameStart, OnGameStart);
             }
         }
 
-        private void InitLevel(object[] arguments)
+        private void OnGameStart(object[] arguments)
         {
             StartCoroutine(SpawnItems());
         }

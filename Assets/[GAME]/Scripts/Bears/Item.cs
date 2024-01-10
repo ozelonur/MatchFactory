@@ -46,7 +46,7 @@ namespace OrangeBear.Bears
 
         public void InitItem()
         {
-            _transform.position = new Vector3(Random.Range(-.4f, .4f), 4.5f, Random.Range(-.4f, .4f));
+            _transform.localPosition = new Vector3(Random.Range(-.4f, .4f), 4.5f, Random.Range(-.4f, .4f));
 
             _transform.localEulerAngles = new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
 
