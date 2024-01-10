@@ -11,6 +11,8 @@ namespace OrangeBear.Bears
         [Header("Components")] [SerializeField]
         private Item itemPrefab;
 
+        [SerializeField] private Transform spawnParent;
+
         [Header("Configurations")] [SerializeField]
         private float spawnCount = 20f;
 
@@ -43,7 +45,7 @@ namespace OrangeBear.Bears
         {
             for (int i = 0; i < spawnCount; i++)
             {
-                Item item = Instantiate(itemPrefab);
+                Item item = Instantiate(itemPrefab, spawnParent);
                 
                 item.InitItem();
 
