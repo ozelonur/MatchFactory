@@ -4,6 +4,7 @@ using System.Linq;
 using _GAME_.Scripts.Models;
 using _GAME_.Scripts.Utils;
 using OrangeBear.EventSystem;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace OrangeBear.Bears
@@ -19,6 +20,8 @@ namespace OrangeBear.Bears
 
         [Header("Configurations")] [SerializeField]
         private SpawnData[] spawnDataArray;
+        
+        [SerializeField] private Item[] spawnedItems;
 
         #endregion
 
@@ -38,8 +41,7 @@ namespace OrangeBear.Bears
 
         private void OnGameStart(object[] arguments)
         {
-            List<int> idList = PrepareSpawn();
-            StartCoroutine(SpawnItems(idList));
+            StartCoroutine(SpawnItems());
         }
 
         #endregion
@@ -63,14 +65,28 @@ namespace OrangeBear.Bears
             return idList;
         }
 
-        private IEnumerator SpawnItems(List<int> idList)
+        private IEnumerator SpawnItems()
         {
-            foreach (Item item in idList.Select(id =>
-                         Instantiate(itemPrefabs.FirstOrDefault(x => x.id == id), spawnParent)))
+            foreach (Item item in spawnedItems)
             {
+                item.gameObject.SetActive(true);
                 item.InitItem();
-
                 yield return null;
+            }
+        }
+
+        [Button("Spawn Level")]
+        private void SpawnLevel()
+        {
+            List<int> idList = PrepareSpawn();
+
+            spawnedItems = new Item[idList.Count];
+
+            for (int i = 0; i < idList.Count; i++)
+            {
+                Item item = Instantiate(itemPrefabs.FirstOrDefault(x => x.id == idList[i]), spawnParent);
+                spawnedItems[i] = item;
+                item.gameObject.SetActive(false);
             }
         }
 
