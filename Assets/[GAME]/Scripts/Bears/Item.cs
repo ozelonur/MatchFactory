@@ -59,28 +59,6 @@ namespace OrangeBear.Bears
 
         #endregion
 
-        #region Event Methods
-
-        protected override void CheckRoarings(bool status)
-        {
-            if (status)
-            {
-                Register(CustomEvents.GetItemBoardController, GetItemBoardController);
-            }
-
-            else
-            {
-                Unregister(CustomEvents.GetItemBoardController, GetItemBoardController);
-            }
-        }
-
-        private void GetItemBoardController(object[] arguments)
-        {
-            // _itemBoardController = (ItemBoardController)arguments[0];
-        }
-
-        #endregion
-
         #region Public Methods
 
         public void InitItem()
@@ -91,12 +69,43 @@ namespace OrangeBear.Bears
             modelRenderer.material = colorMaterial;
         }
 
-        public void UpdateBoard(ItemBoard board, int index)
+        public void UpdateBoard(ItemBoard board, int index, bool reversed = true)
         {
             if (board == null) return;
 
+            float delay = .75f;
+
+            if (reversed)
+            {
+                delay /= index;
+            }
+            else
+            {
+                delay = .25f * (index - 2);
+            }
+            
             board.SetItem(this);
-            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f).SetEase(Ease.OutBack).SetDelay(.75f / index);
+            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f).SetEase(Ease.OutBack).SetDelay(delay);
+        }
+
+        public void DestroyItem(ItemBoard board, int index = -1)
+        {
+            Sequence destroySequence = DOTween.Sequence();
+
+            destroySequence.Join(_transform.DOLocalMove(Vector3.up * .1f, .1f))
+                .Join(_transform.DOScale(Vector3.zero, .1f)).OnComplete(() =>
+                {
+                    board.RemoveItem();
+
+                    if (index != -1)
+                    {
+                        Roar(CustomEvents.Sort);
+                    }
+                    
+                    Destroy(gameObject);
+                })
+                .SetDelay(.15f)
+                .SetLink(gameObject);
         }
 
         #endregion
@@ -110,9 +119,6 @@ namespace OrangeBear.Bears
             if (board == null)
             {
                 board = _itemBoardController.GetFirstEmptyItem();
-
-                // _collider.enabled = false;
-                // _rigidbody.isKinematic = true;
             }
 
             if (board == null)
@@ -122,7 +128,7 @@ namespace OrangeBear.Bears
 
 
             board.SetItem(this);
-            _transform.DOLocalJump(Vector3.zero, 1, 1, .75f);
+            _transform.DOLocalJump(Vector3.zero, 1, 1, .75f).OnComplete(() => { Roar(CustomEvents.CheckMatch, this); });
 
             _transform.DOLocalRotate(Vector3.zero, .25f).OnComplete(() =>
             {

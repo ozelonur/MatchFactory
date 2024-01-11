@@ -37,6 +37,12 @@ namespace OrangeBear.Bears
             isEmpty = false;
         }
 
+        public void RemoveItem()
+        {
+            currentItem = null;
+            isEmpty = true;
+        }
+
         #endregion
     }
 }

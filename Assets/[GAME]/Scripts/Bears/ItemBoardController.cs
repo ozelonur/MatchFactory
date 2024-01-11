@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using _GAME_.Scripts.GlobalVariables;
 using OrangeBear.EventSystem;
 using UnityEngine;
 
@@ -11,6 +12,80 @@ namespace OrangeBear.Bears
 
         [Header("Components")] [SerializeField]
         private ItemBoard[] itemBoards;
+
+        #endregion
+
+        #region Private Variables
+
+        private int _lastDestroyedItemsBoardIndex;
+
+        #endregion
+
+        #region Event Methods
+
+        protected override void CheckRoarings(bool status)
+        {
+            if (status)
+            {
+                Register(CustomEvents.CheckMatch, CheckMatch);
+                Register(CustomEvents.Sort, Sort);
+            }
+
+            else
+            {
+                Unregister(CustomEvents.CheckMatch, CheckMatch);
+                Unregister(CustomEvents.Sort, Sort);
+            }
+        }
+
+        private void Sort(object[] arguments)
+        {
+            for (int i = 0; i < itemBoards.Length; i++)
+            {
+                if (i > _lastDestroyedItemsBoardIndex)
+                {
+                    if (!itemBoards[i].isEmpty)
+                    {
+                        itemBoards[i].currentItem.UpdateBoard(itemBoards[i - 3], i, false);
+                        itemBoards[i].currentItem = null;
+                        itemBoards[i].isEmpty = true;
+                    }
+                }
+            }
+        }
+
+        private void CheckMatch(object[] arguments)
+        {
+            int itemId = ((Item)arguments[0]).id;
+
+            List<ItemBoard> nonEmptyBoardList = itemBoards.Where(x => !x.isEmpty).ToList();
+
+            List<ItemBoard> sameItems = nonEmptyBoardList.Where(x => x.currentItem.id == itemId).ToList();
+
+            if (sameItems.Count < 3)
+            {
+                return;
+            }
+
+            foreach (ItemBoard board in sameItems)
+            {
+                board.currentItem.DestroyItem(board);
+            }
+
+            for (int i = 0; i < sameItems.Count; i++)
+            {
+                if (i != sameItems.Count - 1)
+                {
+                    sameItems[i].currentItem.DestroyItem(sameItems[i]);
+                }
+
+                else
+                {
+                    _lastDestroyedItemsBoardIndex = itemBoards.ToList().IndexOf(sameItems[i]);
+                    sameItems[i].currentItem.DestroyItem(sameItems[i], i);
+                }
+            }
+        }
 
         #endregion
 
