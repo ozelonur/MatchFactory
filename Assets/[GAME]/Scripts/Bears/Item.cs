@@ -99,7 +99,7 @@ namespace OrangeBear.Bears
 
         private void DisableInput(object[] arguments)
         {
-            
+            _isInputDisabled = true;
         }
 
         #endregion
@@ -118,7 +118,7 @@ namespace OrangeBear.Bears
         {
             if (board == null) return;
 
-            float delay = .5f;
+            float delay = .5f * .75f;
 
             if (reversed)
             {
@@ -126,16 +126,16 @@ namespace OrangeBear.Bears
             }
             else
             {
-                delay = .25f * (index - 2);
+                delay = (.25f * .75f) * (index - 2);
             }
 
             if (delay <= 0)
             {
-                delay = .05f;
+                delay = .05f * .75f;
             }
 
             board.SetItem(this);
-            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f).SetEase(Ease.OutBack).SetDelay(delay)
+            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f * .75f).SetEase(Ease.OutBack).SetDelay(delay)
                 .SetLink(gameObject);
         }
 
@@ -172,7 +172,7 @@ namespace OrangeBear.Bears
 
             Roar(CustomEvents.CheckMatch, this);
 
-            _transform.DOLocalJump(Vector3.zero, 1, 1, .75f).OnComplete(() =>
+            _transform.DOLocalJump(Vector3.zero, 1, 1, .75f * .75f).OnComplete(() =>
             {
                 isFlying = false;
                 Roar(CustomEvents.DestroyDestroyableItems);
@@ -180,7 +180,7 @@ namespace OrangeBear.Bears
                 Roar(CustomEvents.LaunchComplete);
             }).SetLink(gameObject);
 
-            _transform.DOLocalRotate(Vector3.zero, .25f).OnComplete(() =>
+            _transform.DOLocalRotate(Vector3.zero, .25f * .75f).OnComplete(() =>
             {
                 _rigidbody.isKinematic = true;
                 _collider.enabled = false;
@@ -190,21 +190,19 @@ namespace OrangeBear.Bears
         private void DestroyItem()
         {
             _board.RemoveItem();
-
-
-            _transform.DOLocalMove(Vector3.up * .1f, .05f).SetEase(Ease.Linear).OnComplete(() =>
+            _transform.DOLocalMove(Vector3.up * .1f, .05f * .75f).SetEase(Ease.Linear).OnComplete(() =>
             {
-                transform.DOScale(Vector3.zero, .1f).SetEase(Ease.Linear).OnComplete(() =>
+                transform.DOScale(Vector3.zero, .1f * .75f).SetEase(Ease.Linear).OnComplete(() =>
                     {
                         if (_index != -1)
                         {
                             Roar(CustomEvents.Sort);
                         }
 
-                        Destroy(gameObject, .1f);
+                        Destroy(gameObject, .1f * .75f);
                     })
                     .SetLink(gameObject);
-            }).SetDelay(.1f).SetLink(gameObject);
+            }).SetDelay(.1f * .75f).SetLink(gameObject);
         }
 
         #endregion
