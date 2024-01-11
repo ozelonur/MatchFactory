@@ -17,7 +17,10 @@ namespace OrangeBear.Bears
 
         #region Private Variables
 
-        private int _lastDestroyedItemsBoardIndex;
+        private int _lastDestroyedItemsBoardIndex = -1;
+        private List<ItemBoard> _sameItems = new();
+
+        private bool _isFailed;
 
         #endregion
 
@@ -29,27 +32,64 @@ namespace OrangeBear.Bears
             {
                 Register(CustomEvents.CheckMatch, CheckMatch);
                 Register(CustomEvents.Sort, Sort);
+                Register(CustomEvents.DestroyDestroyableItems, DestroyEvent);
+                Register(CustomEvents.CheckHowManyBoardsEmpty, CheckHowManyBoardsEmpty);
+                Register(CustomEvents.LaunchComplete, LaunchComplete);
             }
 
             else
             {
                 Unregister(CustomEvents.CheckMatch, CheckMatch);
                 Unregister(CustomEvents.Sort, Sort);
+                Unregister(CustomEvents.DestroyDestroyableItems, DestroyEvent);
+                Unregister(CustomEvents.CheckHowManyBoardsEmpty, CheckHowManyBoardsEmpty);
+                Unregister(CustomEvents.LaunchComplete, LaunchComplete);
             }
+        }
+
+        private void LaunchComplete(object[] arguments)
+        {
+            if (!_isFailed)
+            {
+                return;
+            }
+            Roar(GameEvents.OnGameComplete, false);
+        }
+
+        private void CheckHowManyBoardsEmpty(object[] arguments)
+        {
+            int emptySlotCount = itemBoards.Count(x => x.isEmpty);
+
+            if (emptySlotCount <= 1)
+            {
+                itemBoards[^1].LaunchHighlight();
+            }
+
+            else
+            {
+                itemBoards[^1].AbortHighlight();
+            }
+        }
+
+        private void DestroyEvent(object[] arguments)
+        {
+            DestroyDestroyableItems();
         }
 
         private void Sort(object[] arguments)
         {
             for (int i = 0; i < itemBoards.Length; i++)
             {
-                if (i > _lastDestroyedItemsBoardIndex)
+                if (_lastDestroyedItemsBoardIndex > i)
                 {
-                    if (!itemBoards[i].isEmpty)
-                    {
-                        itemBoards[i].currentItem.UpdateBoard(itemBoards[i - 3], i, false);
-                        itemBoards[i].currentItem = null;
-                        itemBoards[i].isEmpty = true;
-                    }
+                    continue;
+                }
+
+                if (!itemBoards[i].isEmpty)
+                {
+                    itemBoards[i].currentItem.UpdateBoard(itemBoards.FirstOrDefault(x => x.isEmpty), i, false);
+                    itemBoards[i].currentItem = null;
+                    itemBoards[i].isEmpty = true;
                 }
             }
         }
@@ -60,29 +100,28 @@ namespace OrangeBear.Bears
 
             List<ItemBoard> nonEmptyBoardList = itemBoards.Where(x => !x.isEmpty).ToList();
 
-            List<ItemBoard> sameItems = nonEmptyBoardList.Where(x => x.currentItem.id == itemId).ToList();
+            _sameItems.Clear();
 
-            if (sameItems.Count < 3)
-            {
-                return;
-            }
+            _sameItems = nonEmptyBoardList.Where(x => x.currentItem.id == itemId).ToList();
 
-            foreach (ItemBoard board in sameItems)
+            if (_sameItems.Count >= 3)
             {
-                board.currentItem.DestroyItem(board);
-            }
-
-            for (int i = 0; i < sameItems.Count; i++)
-            {
-                if (i != sameItems.Count - 1)
+                for (int i = 0; i < 3; i++)
                 {
-                    sameItems[i].currentItem.DestroyItem(sameItems[i]);
+                    _sameItems[i].currentItem.willDestroy = true;
                 }
+            }
 
-                else
+            else
+            {
+                _sameItems.Clear();
+
+                int emptyBoardCount = itemBoards.Count(x => x.isEmpty);
+
+                if (emptyBoardCount <= 0)
                 {
-                    _lastDestroyedItemsBoardIndex = itemBoards.ToList().IndexOf(sameItems[i]);
-                    sameItems[i].currentItem.DestroyItem(sameItems[i], i);
+                    _isFailed = true;
+                    Roar(CustomEvents.DisableInput);
                 }
             }
         }
@@ -107,7 +146,8 @@ namespace OrangeBear.Bears
                 return null;
             }
 
-            ItemBoard itemBoard = nonEmptyBoards.LastOrDefault(x => x.currentItem.id == item.id);
+            ItemBoard itemBoard =
+                nonEmptyBoards.LastOrDefault(x => x.currentItem.id == item.id && !x.currentItem.willDestroy);
 
             if (itemBoard == null)
             {
@@ -118,6 +158,40 @@ namespace OrangeBear.Bears
 
             SwipeFromIndex(index);
             return itemBoards[index + 1];
+        }
+
+        public void DestroyDestroyableItems()
+        {
+            List<ItemBoard> nonEmptyItems = itemBoards.Where(x => !x.isEmpty).ToList();
+
+            foreach (ItemBoard board in nonEmptyItems)
+            {
+                if (board.currentItem.isFlying)
+                {
+                    return;
+                }
+            }
+
+            if (_sameItems is not { Count: > 0 })
+            {
+                return;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (i != 2)
+                {
+                    _sameItems[i].currentItem.DestroyItem(_sameItems[i]);
+                }
+
+                else
+                {
+                    _lastDestroyedItemsBoardIndex = itemBoards.ToList().IndexOf(_sameItems[i]);
+                    _sameItems[i].currentItem.DestroyItem(_sameItems[i], i);
+                }
+            }
+
+            _sameItems.Clear();
         }
 
         #endregion

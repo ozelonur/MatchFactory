@@ -1,3 +1,4 @@
+using DG.Tweening;
 using OrangeBear.EventSystem;
 using UnityEngine;
 
@@ -9,6 +10,11 @@ namespace OrangeBear.Bears
 
         [Header("Components")] [SerializeField]
         private Transform itemPlacementTransform;
+
+        [SerializeField] private Renderer boardRenderer;
+
+        [Header("Configurations")] [SerializeField]
+        private Color highLightColor;
 
         #endregion
 
@@ -41,6 +47,17 @@ namespace OrangeBear.Bears
         {
             currentItem = null;
             isEmpty = true;
+        }
+
+        public void LaunchHighlight()
+        {
+            boardRenderer.material.DOColor(highLightColor, 1f).SetLoops(-1, LoopType.Yoyo).SetId("BoardRendererId");
+        }
+
+        public void AbortHighlight()
+        {
+            DOTween.Kill("BoardRendererId");
+            boardRenderer.material.color = Color.white;
         }
 
         #endregion
