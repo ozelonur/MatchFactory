@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using _GAME_.Scripts.GlobalVariables;
-using DG.Tweening;
 using OrangeBear.EventSystem;
 using UnityEngine;
 
@@ -13,28 +11,6 @@ namespace OrangeBear.Bears
 
         [Header("Components")] [SerializeField]
         private ItemBoard[] itemBoards;
-
-        #endregion
-
-        #region Event Methods
-
-        protected override void CheckRoarings(bool status)
-        {
-            if (status)
-            {
-                Register(GameEvents.OnGameStart, SetThis);
-            }
-
-            else
-            {
-                Unregister(GameEvents.OnGameStart, SetThis);
-            }
-        }
-
-        private void SetThis(object[] arguments)
-        {
-            DOVirtual.DelayedCall(.1f, () => { Roar(CustomEvents.GetItemBoardController, this); });
-        }
 
         #endregion
 
