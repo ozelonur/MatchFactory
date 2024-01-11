@@ -14,7 +14,7 @@ namespace OrangeBear.Bears
 
         [SerializeField] private Material outlineMaterial;
 
-        [SerializeField] private Renderer renderer;
+        [SerializeField] private Renderer modelRenderer;
 
         #endregion
 
@@ -42,18 +42,19 @@ namespace OrangeBear.Bears
             _transform = transform;
             _collider = GetComponent<Collider>();
             _rigidbody = GetComponent<Rigidbody>();
+
+            _itemBoardController = transform.root.GetComponent<ItemBoardController>();
         }
 
         private void OnMouseDown()
         {
-            Debug.Log("On Mouse Down");
-            renderer.material = outlineMaterial;
+            modelRenderer.material = outlineMaterial;
             GoToBoard();
         }
 
         private void OnMouseUp()
         {
-            renderer.material = colorMaterial;
+            modelRenderer.material = colorMaterial;
         }
 
         #endregion
@@ -87,9 +88,7 @@ namespace OrangeBear.Bears
             _transform.localPosition = new Vector3(Random.Range(-.4f, .4f), 4.5f, Random.Range(-.4f, .4f));
 
             _transform.localEulerAngles = new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
-            renderer.material = colorMaterial;
-
-            _itemBoardController = FindObjectOfType<ItemBoardController>();
+            modelRenderer.material = colorMaterial;
         }
 
         public void UpdateBoard(ItemBoard board, int index)
@@ -97,7 +96,7 @@ namespace OrangeBear.Bears
             if (board == null) return;
 
             board.SetItem(this);
-            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f).SetEase(Ease.OutBack).SetDelay((float)(.75f / index));
+            _transform.DOLocalJump(Vector3.zero, .2f, 1, .75f).SetEase(Ease.OutBack).SetDelay(.75f / index);
         }
 
         #endregion
@@ -110,7 +109,6 @@ namespace OrangeBear.Bears
 
             if (board == null)
             {
-                Debug.Log("There is no same item!");
                 board = _itemBoardController.GetFirstEmptyItem();
 
                 // _collider.enabled = false;
@@ -119,7 +117,6 @@ namespace OrangeBear.Bears
 
             if (board == null)
             {
-                Debug.Log("There is no board!");
                 return;
             }
 
